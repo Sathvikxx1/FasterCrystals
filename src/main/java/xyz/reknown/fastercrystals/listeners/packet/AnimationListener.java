@@ -23,7 +23,6 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
@@ -54,19 +53,18 @@ public class AnimationListener extends SimplePacketListenerAbstract {
         AnimPackets lastPacket = user.getLastPacket();
         Location eyeLoc = player.getEyeLocation();
         Vector direction = eyeLoc.getDirection();
-        FoliaScheduler.getRegionScheduler().run(plugin, eyeLoc, task -> {
-            if (lastPacket == AnimPackets.IGNORE) return; // animation is for hotbar drop item/placement/use item
-            if (user.isIgnoreAnim()) return; // animation is for inventory drop item
 
-            // Ensure the player did not move too far (specifically, to another Folia region)
-            // Otherwise, the below will throw an exception for attempting to raytrace from a different thread
-            Location newEyeLoc = player.getEyeLocation();
-            if (eyeLoc.getWorld() != newEyeLoc.getWorld() || newEyeLoc.distanceSquared(eyeLoc) > 100) return; // it is unrealistic for a player to move 10 blocks in this time
+        FoliaScheduler.getRegionScheduler().run(plugin, eyeLoc, task -> {
+
+            if (lastPacket == AnimPackets.IGNORE)
+                return; // animation is for hotbar drop item/placement/use item
+            if (user.isIgnoreAnim())
+                return; // animation is for inventory drop item
 
             RayTraceResult result = eyeLoc.getWorld().rayTraceEntities(
                     eyeLoc,
                     direction,
-                    player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getValue(),
+                    3.0,
                     0.0,
                     entity -> {
                         if (!((CraftEntity) entity).getHandle().isPickable()) return false;
